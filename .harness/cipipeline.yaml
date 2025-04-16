@@ -1,0 +1,46 @@
+pipeline:
+  name: GitHub-AzureDevOps-Connection-Pipeline
+  identifier: github-azuredevops-pipeline
+  projectIdentifier: <your-project-id>  # Replace with your actual project ID
+  description: Pipeline to connect to Azure DevOps with PAT Token and execute GitHub code
+  tags:
+    - azure
+    - devops
+    - github
+
+  stages:
+    - stage:
+        name: PullCodeAndRun
+        identifier: pull-code-and-run
+        type: Run
+        spec:
+          execution:
+            steps:
+              # Step 1: Clone code from GitHub
+              - step:
+                  name: PullCodeFromGitHub
+                  identifier: pull-code-github
+                  type: GitClone
+                  spec:
+                    connectorRef: <GitHub-connector-id>  # Replace with your GitHub connector ID
+                    repositoryName: <your-github-repo>  # Replace with your GitHub repo name (e.g., username/repo-name)
+                    branch: main  # Replace with your branch name if different
+                    commitId: latest
+
+              # Step 2: Run hello-world.sh (prints "Hello, World!")
+              - step:
+                  name: PrintHelloWorld
+                  identifier: print-hello-world
+                  type: Run
+                  spec:
+                    image: maven:3.8.1-jdk-11  # Use a base image
+                    shell: |
+                      echo "Connecting to Azure DevOps with PAT Token"
+                      # Simulate Azure DevOps integration
+                      echo "Azure DevOps Token: $AZURE_PAT_TOKEN"
+                      # Now execute the code pulled from GitHub (assuming hello-world.sh exists)
+                      chmod +x hello-world.sh
+                      ./hello-world.sh
+                    environmentVariables:
+                      - name: AZURE_PAT_TOKEN
+                        value: <secrets.azure-pat-token>  # Reference the secret stored in Harness
